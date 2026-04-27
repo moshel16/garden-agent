@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סוכן הגינה — משה נוף הגליל</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g1:#1a4a2e;--g2:#2d6a4f;--g3:#40916c;--g4:#52b788;--g5:#74c69d;--g6:#95d5b2;--g7:#b7e4c7;--g8:#d8f3dc;
+  --amber:#e9a825;--red:#c0392b;--blue:#2980b9;--orange:#e67e22;
+  --bg:#f4fbf6;--card:#fff;--border:#c8e6d0;--text:#1a3a27;--muted:#5a8a6a;
+}
+html,body{height:100%;background:var(--bg);font-family:'Heebo',sans-serif;direction:rtl;}
+#root{max-width:680px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--g1) 0%,var(--g2) 60%,var(--g3) 100%);padding:18px 20px 14px;position:relative;overflow:hidden;flex-shrink:0;}
+.hdr::before{content:'';position:absolute;top:-30px;left:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.hdr::after{content:'';position:absolute;bottom:-20px;right:40px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;}
+.hdr-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;}
+.hdr-sub{font-size:12px;color:var(--g7);margin-top:2px;}
+.weather-pill{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:6px 14px;text-align:center;}
+.weather-temp{font-size:18px;font-weight:700;color:#fff;}
+.weather-desc{font-size:10px;color:var(--g7);}
+
+/* URGENT */
+.urgent-banner{background:linear-gradient(90deg,#7d1f1f,#a93226);padding:10px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;}
+.urgent-dot{width:8px;height:8px;border-radius:50%;background:#ff8080;flex-shrink:0;animation:pulse 1.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.3)}}
+.urgent-text{flex:1;font-size:13px;color:#ffd5d5;font-weight:500;}
+.urgent-count{background:rgba(255,255,255,0.2);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;}
+
+/* NAV */
+.nav{display:flex;background:#fff;border-bottom:1.5px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10;}
+.nav-btn{flex:1;padding:12px 4px 10px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Heebo',sans-serif;white-space:nowrap;}
+.nav-btn.active{color:var(--g2);border-bottom-color:var(--g3);}
+.nav-icon{font-size:18px;display:block;margin-bottom:2px;}
+
+/* PANELS */
+.panels{flex:1;overflow-y:auto;}
+.panel{display:none;padding:16px 16px 80px;animation:fadeIn 0.2s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.card-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
+
+/* DASH */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-tile{background:linear-gradient(135deg,var(--g8),#fff);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.stat-num{font-size:26px;font-weight:700;color:var(--g2);}
+.stat-label{font-size:11px;color:var(--muted);margin-top:1px;}
+.action-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;}
+.action-tile{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.action-tile:hover{background:var(--g8);border-color:var(--g5);}
+.action-tile:active{transform:scale(0.97);}
+.action-icon{font-size:22px;margin-bottom:4px;}
+.action-label{font-size:11px;color:var(--muted);font-weight:500;}
+.forecast-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;}
+.fc-day{background:linear-gradient(180deg,var(--g8),#fff);border:1px solid var(--border);border-radius:10px;padding:8px 10px;text-align:center;flex-shrink:0;min-width:56px;}
+.fc-name{font-size:10px;color:var(--muted);}
+.fc-t{font-size:15px;font-weight:700;color:var(--g2);}
+.fc-r{font-size:10px;color:var(--blue);}
+.advice-row{display:flex;flex-direction:column;gap:8px;}
+.advice-chip{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;border-right:3px solid transparent;}
+.chip-green{background:#e8f5e9;border-right-color:var(--g3);color:#1b5e20;}
+.chip-amber{background:#fff8e1;border-right-color:var(--amber);color:#5d4037;}
+.chip-blue{background:#e3f2fd;border-right-color:var(--blue);color:#1a237e;}
+
+/* ALERTS */
+.alert-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin:14px 0 8px;display:flex;align-items:center;gap:6px;}
+.alert-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.alert-item{display:flex;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;align-items:flex-start;}
+.ai-urgent{background:#fff0f0;border:1px solid #ffcdd2;}
+.ai-week{background:#fffde7;border:1px solid #fff176;}
+.ai-month{background:#f1f8e9;border:1px solid #c5e1a5;}
+.al-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.al-title{font-size:13px;font-weight:700;color:var(--text);}
+.al-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.al-tag{display:inline-block;font-size:10px;padding:1px 8px;border-radius:8px;margin-top:4px;font-weight:500;}
+.tag-now{background:#ffcdd2;color:#c62828;}
+.tag-week{background:#fff176;color:#f57f17;}
+.tag-month{background:#c5e1a5;color:#2e7d32;}
+
+/* PLANTS */
+.plants-bulk{display:flex;flex-direction:column;gap:8px;}
+.plant-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.plant-emoji{font-size:20px;width:32px;text-align:center;flex-shrink:0;}
+.plant-info{flex:1;}
+.plant-name{font-size:14px;font-weight:700;color:var(--text);}
+.plant-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+.plant-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.pbadge{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:500;}
+.pb-water{background:#e3f2fd;color:#1565c0;}
+.pb-harvest{background:#fff8e1;color:#e65100;}
+.pb-ph{background:#f3e5f5;color:#6a1b9a;}
+.zone-sep{font-size:11px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:0.08em;padding:4px 0 2px;border-bottom:1.5px solid var(--border);margin-bottom:6px;}
+
+/* JOURNAL */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em;}
+.finput{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:'Heebo',sans-serif;background:#fff;color:var(--text);direction:rtl;transition:border-color 0.15s;}
+.finput:focus{outline:none;border-color:var(--g4);}
+textarea.finput{min-height:65px;resize:vertical;}
+.btn-save{background:linear-gradient(135deg,var(--g3),var(--g2));color:#fff;border:none;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;transition:all 0.15s;}
+.btn-save:hover{opacity:0.9;}
+.btn-clear{background:#fff;color:var(--muted);border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Heebo',sans-serif;}
+.jentry{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+.je-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.je-plant{font-size:13px;font-weight:700;color:var(--text);}
+.je-date{font-size:11px;color:var(--muted);}
+.je-action{display:inline-block;font-size:11px;padding:2px 9px;border-radius:6px;margin-left:6px;font-weight:500;}
+.ja-water{background:#e3f2fd;color:#1565c0;}
+.ja-fert{background:#e8f5e9;color:#2e7d32;}
+.ja-prune{background:#fff8e1;color:#e65100;}
+.ja-pest{background:#ffebee;color:#c62828;}
+.ja-harvest{background:#f3e5f5;color:#6a1b9a;}
+.ja-other{background:#f5f5f5;color:#616161;}
+.je-notes{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.je-del{font-size:11px;color:#ef9a9a;cursor:pointer;padding:2px 6px;border-radius:5px;}
+.je-del:hover{background:#ffebee;color:var(--red);}
+.filter-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.fpill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:all 0.15s;}
+.fpill.active{background:var(--g3);color:#fff;border-color:var(--g3);}
+
+/* CHAT */
+.chat-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.chat-msgs{height:320px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.cmsg{display:flex;gap:8px;align-items:flex-end;}
+.cmsg.user{flex-direction:row-reverse;}
+.cbubble{max-width:78%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.6;}
+.cmsg.bot .cbubble{background:var(--g8);color:var(--text);border-bottom-right-radius:3px;}
+.cmsg.user .cbubble{background:linear-gradient(135deg,var(--g3),var(--g2));color:#fff;border-bottom-left-radius:3px;}
+.cavatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.bot-av{background:var(--g3);color:#fff;font-weight:700;}
+.user-av{background:var(--g7);color:var(--g2);font-weight:700;}
+.typing-dots{display:flex;gap:3px;align-items:center;padding:4px 0;}
+.tdot{width:5px;height:5px;border-radius:50%;background:var(--g4);animation:bounce 1.2s infinite;}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.chat-inp-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:#fafffe;}
+.chat-inp{flex:1;padding:9px 13px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:'Heebo',sans-serif;direction:rtl;background:#fff;color:var(--text);}
+.chat-inp:focus{outline:none;border-color:var(--g4);}
+.chat-send{background:linear-gradient(135deg,var(--g3),var(--g2));color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed;}
+.sugs{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px 6px;background:#fafffe;border-bottom:1px solid var(--border);}
+.sug{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:all 0.15s;}
+.sug:hover{background:var(--g8);border-color:var(--g5);color:var(--g2);}
+.api-note{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 14px;font-size:12px;color:#5d4037;margin-bottom:12px;line-height:1.5;}
+.api-inp-row{display:flex;gap:8px;margin-top:8px;}
+.api-inp{flex:1;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Heebo',sans-serif;direction:ltr;background:#fff;color:var(--text);}
+.api-save-btn{background:var(--g3);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--g2);color:#fff;padding:9px 22px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;font-family:'Heebo',sans-serif;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="root">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="hdr-title">גינת משה — נוף הגליל</div>
+        <div class="hdr-sub" id="hdr-date"></div>
+      </div>
+      <div class="weather-pill">
+        <div class="weather-temp" id="hdr-temp">—°</div>
+        <div class="weather-desc" id="hdr-cond">טוען...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="urgent-banner" id="urgent-banner" style="display:none" onclick="showUrgent()">
+    <div class="urgent-dot"></div>
+    <div class="urgent-text" id="urgent-text"></div>
+    <div class="urgent-count" id="urgent-count"></div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchTab('dash',this)"><span class="nav-icon">🏡</span>בית</button>
+    <button class="nav-btn" onclick="switchTab('alerts',this)"><span class="nav-icon">🔔</span>התראות</button>
+    <button class="nav-btn" onclick="switchTab('plants',this)"><span class="nav-icon">🌿</span>צמחים</button>
+    <button class="nav-btn" onclick="switchTab('journal',this)"><span class="nav-icon">📒</span>יומן</button>
+    <button class="nav-btn" onclick="switchTab('chat',this)"><span class="nav-icon">💬</span>צ'אט</button>
+  </div>
+
+  <div class="panels">
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dash">
+      <div class="dash-grid">
+        <div class="stat-tile"><div class="stat-num">17</div><div class="stat-label">צמחים בגינה</div></div>
+        <div class="stat-tile"><div class="stat-num" id="st-entries">0</div><div class="stat-label">רשומות ביומן</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">פעולה מהירה</div>
+        <div class="action-strip">
+          <div class="action-tile" onclick="quickLog('water')"><div class="action-icon">💧</div><div class="action-label">השקיתי</div></div>
+          <div class="action-tile" onclick="quickLog('fert')"><div class="action-icon">🌱</div><div class="action-label">דישנתי</div></div>
+          <div class="action-tile" onclick="quickLog('prune')"><div class="action-icon">✂️</div><div class="action-label">גיזמתי</div></div>
+          <div class="action-tile" onclick="quickLog('pest')"><div class="action-icon">🐛</div><div class="action-label">טיפול מזיקים</div></div>
+          <div class="action-tile" onclick="quickLog('harvest')"><div class="action-icon">🍊</div><div class="action-label">קציר</div></div>
+          <div class="action-tile" onclick="switchTab('chat',document.querySelectorAll('.nav-btn')[4])"><div class="action-icon">💬</div><div class="action-label">שאל שאלה</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">תחזית 5 ימים</div>
+        <div class="forecast-row" id="fc-row"><div style="color:var(--muted);font-size:13px;">טוען תחזית...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">המלצות לפי מזג האוויר</div>
+        <div class="advice-row" id="advice-row"></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="panel" id="panel-alerts">
+      <div class="alert-section-title">דחוף עכשיו</div>
+      <div id="al-urgent"></div>
+      <div class="alert-section-title">השבוע</div>
+      <div id="al-week"></div>
+      <div class="alert-section-title">החודש</div>
+      <div id="al-month"></div>
+    </div>
+
+    <!-- PLANTS -->
+    <div class="panel" id="panel-plants">
+      <div class="card" style="padding:10px 14px;">
+        <div class="zone-sep">גינה גדולה — 12 צמחים</div>
+        <div class="plants-bulk" id="plants-big"></div>
+        <div class="zone-sep" style="margin-top:14px;">גינה קטנה — 5 צמחים</div>
+        <div class="plants-bulk" id="plants-small"></div>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="panel" id="panel-journal">
+      <div class="card">
+        <div class="card-title">רשומה חדשה</div>
+        <div class="form-grid">
+          <div>
+            <div class="form-label">צמח</div>
+            <select class="finput" id="j-plant">
+              <option value="כל הגינה">כל הגינה</option>
+              <optgroup label="גינה גדולה">
+                <option>קלמנטינה מיכל</option><option>קלמנטינה אור</option><option>לימון יוריקה</option>
+                <option>דובדבן היהודים (שלפח)</option><option>אוכמניות בילוקסי</option><option>אוכמניות לגסי</option>
+                <option>אוכמניות ג'ם</option><option>אוכמניות פינק למונייד</option><option>תפוז סיני</option>
+                <option>ליליום</option><option>בטטה סגולה</option><option>גרניום לימוני</option>
+              </optgroup>
+              <optgroup label="גינה קטנה">
+                <option>תות פקיסטני</option><option>דובדבן ריו גרנדה</option><option>פיטנגובה</option>
+                <option>אוסנה</option><option>בויזנברי</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <div class="form-label">פעולה</div>
+            <select class="finput" id="j-action">
+              <option value="water">💧 השקיה</option><option value="fert">🌱 דישון</option>
+              <option value="prune">✂️ גיזום</option><option value="pest">🐛 מזיקים</option>
+              <option value="harvest">🍊 קציר</option><option value="other">📝 אחר</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-label">תאריך</div>
+            <input type="date" class="finput" id="j-date">
+          </div>
+          <div>
+            <div class="form-label">כמות</div>
+            <input type="text" class="finput" id="j-amount" placeholder="20 ל', 50 גרם...">
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div class="form-label">הערות</div>
+          <textarea class="finput" id="j-notes" placeholder="מה הבחנת? מה עשית?"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-save" onclick="saveEntry()">שמור</button>
+          <button class="btn-clear" onclick="clearJForm()">נקה</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:8px;">יומן</div>
+        <div class="filter-pills">
+          <div class="fpill active" onclick="setJFilter('all',this)">הכל</div>
+          <div class="fpill" onclick="setJFilter('water',this)">💧</div>
+          <div class="fpill" onclick="setJFilter('fert',this)">🌱</div>
+          <div class="fpill" onclick="setJFilter('prune',this)">✂️</div>
+          <div class="fpill" onclick="setJFilter('pest',this)">🐛</div>
+          <div class="fpill" onclick="setJFilter('harvest',this)">🍊</div>
+        </div>
+        <div id="j-entries"></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="panel" id="panel-chat">
+      <div class="api-note" id="api-note">
+        כדי שהצ'אט יעבוד דרוש Anthropic API Key שלך.
+        <div class="api-inp-row">
+          <input class="api-inp" id="api-key-inp" type="password" placeholder="sk-ant-...">
+          <button class="api-save-btn" onclick="saveApiKey()">שמור</button>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:#8d6e63;">המפתח נשמר בדפדפן שלך בלבד ולא נשלח לשום מקום חוץ מ-Anthropic.</div>
+      </div>
+      <div class="chat-wrap">
+        <div class="sugs" id="chat-sugs">
+          <div class="sug" onclick="useSug(this)">מה לעשות השבוע?</div>
+          <div class="sug" onclick="useSug(this)">האוכמניות מצהיבות</div>
+          <div class="sug" onclick="useSug(this)">מתי לקצור קלמנטינה?</div>
+          <div class="sug" onclick="useSug(this)">איך לדשן הדרים?</div>
+          <div class="sug" onclick="useSug(this)">בעיה בבויזנברי</div>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-inp-row">
+          <input class="chat-inp" id="chat-inp" placeholder="שאל את סוכן הגינה..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendChat()}">
+          <button class="chat-send" id="chat-send" onclick="sendChat()">שלח</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const JKEY='moshe_garden_v2';
+const AKEY='moshe_garden_apikey';
+
+const PLANTS_BIG=[
+  {n:'קלמנטינה מיכל',e:'🍊',t:'הדר',water:'2×/שבוע',fert:'NPK ×4/שנה',harvest:'נוב-ינו'},
+  {n:'קלמנטינה אור',e:'🍊',t:'הדר',water:'2×/שבוע',fert:'NPK ×4/שנה',harvest:'אוק-דצ'},
+  {n:'לימון יוריקה',e:'🍋',t:'הדר',water:'2×/שבוע',fert:'NPK ×4/שנה',harvest:'כל השנה'},
+  {n:'דובדבן היהודים (שלפח)',e:'🍒',t:'דובדבן',water:'3×/שבוע',fert:'NPK פבר',harvest:'מאי-יוני'},
+  {n:'אוכמניות בילוקסי',e:'🫐',t:'אוכמניות',water:'יומי',fert:'חומצי',harvest:'מאי-יוני',ph:'4.5-5.5'},
+  {n:'אוכמניות לגסי',e:'🫐',t:'אוכמניות',water:'יומי',fert:'חומצי',harvest:'יוני-יולי',ph:'4.5-5.5'},
+  {n:'אוכמניות ג\'ם',e:'🫐',t:'אוכמניות',water:'יומי',fert:'חומצי',harvest:'מאי-יוני',ph:'4.5-5.5'},
+  {n:'אוכמניות פינק למונייד',e:'🫐',t:'אוכמניות',water:'יומי',fert:'חומצי',harvest:'יוני-יולי',ph:'4.5-5.5'},
+  {n:'תפוז סיני',e:'🍊',t:'הדר',water:'2×/שבוע',fert:'NPK ×3/שנה',harvest:'נוב-ינו'},
+  {n:'ליליום',e:'🌸',t:'פרח פקעת',water:'בינונית',fert:'לפני פריחה',harvest:'נוי אפר-יוני'},
+  {n:'בטטה סגולה',e:'🍠',t:'ירק',water:'בינונית',fert:'אשלגן גבוה',harvest:'ספט-נוב'},
+  {n:'גרניום לימוני',e:'🌿',t:'עשב ריחני',water:'נמוכה',fert:'×1/עונה',harvest:'עלים כל השנה'},
+];
+const PLANTS_SMALL=[
+  {n:'תות פקיסטני',e:'🍓',t:'תות',water:'יומי',fert:'NPK+אשלגן',harvest:'אפר-יוני'},
+  {n:'דובדבן ריו גרנדה',e:'🍒',t:'דובדבן',water:'3×/שבוע',fert:'NPK פבר',harvest:'אפר-מאי'},
+  {n:'פיטנגובה',e:'🍑',t:'טרופי',water:'2×/שבוע',fert:'NPK מאוזן',harvest:'מאי-יוני, ספט'},
+  {n:'אוסנה',e:'🌺',t:'טרופי',water:'2×/שבוע',fert:'NPK+ברזל',harvest:'כמה עונות'},
+  {n:'בויזנברי',e:'🫐',t:'פרי יער',water:'3×/שבוע',fert:'NPK+אשלגן',harvest:'יוני-יולי'},
+];
+
+const ALERTS={
+  urgent:[
+    {title:'קציר דובדבן ריו גרנדה',desc:'בדוק בשלות פרי — קציר מוקדם, עלול להיות מוכן עכשיו',tag:'tag-now'},
+    {title:'אוכמניות בפריחה',desc:'תחילת עונת בילוקסי וג\'ם — בדוק בשלות פרי יומיומית',tag:'tag-now'},
+    {title:'ליליום — פריחה פעילה',desc:'הפסק השקיה כשהפרחים מתחילים לנבול',tag:'tag-now'},
+  ],
+  week:[
+    {title:'בדיקת pH אוכמניות',desc:'מדוד pH קרקע — אם מעל 5.5 הוסף גופרית מיד',tag:'tag-week'},
+    {title:'ריסוס מניעתי הדרים',desc:'שמן פרפין לקלמנטינות, לימון ותפוז',tag:'tag-week'},
+    {title:'תות פקיסטני',desc:'הסר ריצים עודפים לחיזוק הצמח הראשי',tag:'tag-week'},
+  ],
+  month:[
+    {title:'דישון אביב — כל הגינה',desc:'NPK עשיר חנקן להדרים. חומצי לאוכמניות. אשלגן לבויזנברי',tag:'tag-month'},
+    {title:'תמך בויזנברי',desc:'בדוק ותחזק תמך/גדר לפני גדילת הקיץ',tag:'tag-month'},
+    {title:'גיזום תות פקיסטני',desc:'הסר ריצים, חזק צמח ראשי לקציר',tag:'tag-month'},
+  ]
+};
+
+const GARDEN_CTX=`אתה סוכן גינון של משה לופו מנוף הגליל. ענה בעברית בלבד, בקצרה (3-5 משפטים), ידידותי ומעשי.
+גינה גדולה: קלמנטינה מיכל, קלמנטינה אור, לימון יוריקה, דובדבן היהודים (שלפח), אוכמניות בילוקסי, לגסי, ג'ם, פינק למונייד (pH 4.5-5.5 חובה!), תפוז סיני, ליליום, בטטה סגולה, גרניום לימוני.
+גינה קטנה: תות פקיסטני, דובדבן ריו גרנדה, פיטנגובה, אוסנה, בויזנברי.
+עונה: בהתאם לתאריך הנוכחי. אקלים: ים תיכוני, גליל תחתון.`;
+
+let jEntries=[], jFilter='all', chatHistory=[], apiKey='';
+
+function load(){
+  try{const r=localStorage.getItem(JKEY);jEntries=r?JSON.parse(r):[];}catch(e){jEntries=[];}
+  try{apiKey=localStorage.getItem(AKEY)||'';}catch(e){}
+  if(apiKey){document.getElementById('api-note').style.display='none';}
+}
+function save(){try{localStorage.setItem(JKEY,JSON.stringify(jEntries));}catch(e){}}
+function saveApiKey(){
+  const v=document.getElementById('api-key-inp').value.trim();
+  if(!v){toast('הזן מפתח תקין');return;}
+  apiKey=v;
+  try{localStorage.setItem(AKEY,v);}catch(e){}
+  document.getElementById('api-note').style.display='none';
+  toast('מפתח נשמר!');
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+function switchTab(name,el){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='journal') renderJEntries();
+}
+function showUrgent(){switchTab('alerts',document.querySelectorAll('.nav-btn')[1]);}
+
+async function fetchWeather(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=32.847&longitude=35.333&current=temperature_2m,weather_code&daily=temperature_2m_max,precipitation_probability_max&timezone=Asia/Jerusalem&forecast_days=5');
+    const d=await r.json();
+    const temp=Math.round(d.current.temperature_2m);
+    const codes={0:'שמשי',1:'בהיר',2:'מעונן חלקית',3:'מעונן',51:'ממטר קל',61:'גשם',80:'מקלחות',95:'סופת רעמים'};
+    const cond=codes[d.current.weather_code]||'בהיר';
+    document.getElementById('hdr-temp').textContent=temp+'°';
+    document.getElementById('hdr-cond').textContent=cond;
+    const days=['היום','מחר','שלישי','רביעי','חמישי'];
+    document.getElementById('fc-row').innerHTML=d.daily.time.slice(0,5).map((t,i)=>`
+      <div class="fc-day">
+        <div class="fc-name">${days[i]}</div>
+        <div class="fc-t">${Math.round(d.daily.temperature_2m_max[i])}°</div>
+        <div class="fc-r">${d.daily.precipitation_probability_max[i]>10?d.daily.precipitation_probability_max[i]+'% גשם':'יבש'}</div>
+      </div>`).join('');
+    renderAdvice(temp, d.daily.precipitation_probability_max[0]);
+  }catch(e){
+    document.getElementById('hdr-temp').textContent='—°';
+    document.getElementById('hdr-cond').textContent='אין חיבור';
+    document.getElementById('fc-row').innerHTML='<div style="color:var(--muted);font-size:13px;">לא ניתן לטעון תחזית</div>';
+  }
+}
+
+function renderAdvice(temp=23, rain=10){
+  const chips=[];
+  if(temp>30) chips.push({cls:'chip-amber',text:'חום קיצוני — השק בבוקר מוקדם לפני 6:00. אוכמניות בסכנה.'});
+  else if(temp>25) chips.push({cls:'chip-amber',text:'חום גבוה — השק בבוקר מוקדם. בדוק לחות קרקע אוכמניות.'});
+  else chips.push({cls:'chip-green',text:'תנאים נוחים לגינה. מתאים לגיזום, שתילה ודישון.'});
+  if(rain>30) chips.push({cls:'chip-blue',text:'גשם צפוי — הפחת השקיה. בדוק ניקוז סביב אוכמניות ובויזנברי.'});
+  else if(rain<=10) chips.push({cls:'chip-green',text:'יבש — תנאים אידיאליים לריסוס מניעתי על ההדרים.'});
+  chips.push({cls:'chip-amber',text:'אפריל: בדוק pH אוכמניות. יעד 4.5-5.5. הוסף גופרית אם נדרש.'});
+  document.getElementById('advice-row').innerHTML=chips.map(c=>`<div class="advice-chip ${c.cls}">${c.text}</div>`).join('');
+}
+
+function renderHeader(){
+  const now=new Date();
+  document.getElementById('hdr-date').textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('st-entries').textContent=jEntries.length;
+}
+
+function renderAlerts(){
+  const urgentBg={'tag-now':'ai-urgent','tag-week':'ai-week','tag-month':'ai-month'};
+  const tagLbl={'tag-now':'דחוף','tag-week':'השבוע','tag-month':'החודש'};
+  const dotColor={'tag-now':'#e53935','tag-week':'#f9a825','tag-month':'#43a047'};
+  ['urgent','week','month'].forEach(k=>{
+    document.getElementById('al-'+k).innerHTML=ALERTS[k].map(a=>`
+      <div class="alert-item ${urgentBg[a.tag]}">
+        <div class="al-dot" style="background:${dotColor[a.tag]}"></div>
+        <div>
+          <div class="al-title">${a.title}</div>
+          <div class="al-desc">${a.desc}</div>
+          <span class="al-tag ${a.tag}">${tagLbl[a.tag]}</span>
+        </div>
+      </div>`).join('');
+  });
+  const uCount=ALERTS.urgent.length;
+  if(uCount>0){
+    document.getElementById('urgent-banner').style.display='flex';
+    document.getElementById('urgent-text').textContent=ALERTS.urgent[0].title+' ועוד...';
+    document.getElementById('urgent-count').textContent=uCount+' התראות דחופות';
+  }
+}
+
+function renderPlants(){
+  const pHTML=p=>`<div class="plant-row">
+    <div class="plant-emoji">${p.e}</div>
+    <div class="plant-info">
+      <div class="plant-name">${p.n}</div>
+      <div class="plant-meta">${p.t}</div>
+      <div class="plant-badges">
+        <span class="pbadge pb-water">💧 ${p.water}</span>
+        <span class="pbadge pb-harvest">🍊 ${p.harvest}</span>
+        ${p.ph?`<span class="pbadge pb-ph">pH ${p.ph}</span>`:''}
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('plants-big').innerHTML=PLANTS_BIG.map(pHTML).join('');
+  document.getElementById('plants-small').innerHTML=PLANTS_SMALL.map(pHTML).join('');
+}
+
+const aLabel={water:'💧 השקיה',fert:'🌱 דישון',prune:'✂️ גיזום',pest:'🐛 מזיקים',harvest:'🍊 קציר',other:'📝 אחר'};
+const aCls={water:'ja-water',fert:'ja-fert',prune:'ja-prune',pest:'ja-pest',harvest:'ja-harvest',other:'ja-other'};
+
+function renderJEntries(){
+  const list=jFilter==='all'?jEntries:jEntries.filter(e=>e.action===jFilter);
+  document.getElementById('j-entries').innerHTML=list.length?list.map(e=>`
+    <div class="jentry">
+      <div class="je-top">
+        <div><span class="je-plant">${e.plant}</span><span class="je-action ${aCls[e.action]}">${aLabel[e.action]}</span>${e.amount?`<span style="font-size:11px;color:var(--muted);"> ${e.amount}</span>`:''}</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="je-date">${new Date(e.date).toLocaleDateString('he-IL')}</span><span class="je-del" onclick="delEntry(${e.id})">✕</span></div>
+      </div>
+      ${e.notes?`<div class="je-notes">${e.notes}</div>`:''}
+    </div>`).join(''):`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">אין רשומות עדיין</div>`;
+}
+
+function saveEntry(){
+  const date=document.getElementById('j-date').value;
+  if(!date){toast('בחר תאריך');return;}
+  const e={id:Date.now(),plant:document.getElementById('j-plant').value,action:document.getElementById('j-action').value,date,amount:document.getElementById('j-amount').value.trim(),notes:document.getElementById('j-notes').value.trim()};
+  jEntries.unshift(e);save();
+  document.getElementById('st-entries').textContent=jEntries.length;
+  renderJEntries();clearJForm();toast('נשמר!');
+}
+function clearJForm(){
+  document.getElementById('j-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('j-amount').value='';
+  document.getElementById('j-notes').value='';
+}
+function delEntry(id){jEntries=jEntries.filter(e=>e.id!==id);save();renderJEntries();document.getElementById('st-entries').textContent=jEntries.length;}
+function setJFilter(f,el){jFilter=f;document.querySelectorAll('.fpill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderJEntries();}
+function quickLog(action){
+  const e={id:Date.now(),plant:'כל הגינה',action,date:new Date().toISOString().split('T')[0],amount:'',notes:''};
+  jEntries.unshift(e);save();
+  document.getElementById('st-entries').textContent=jEntries.length;
+  toast(aLabel[action]+' נרשם!');
+}
+
+function addChat(role,text,typing=false){
+  const msgs=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className='cmsg '+(role==='user'?'user':'bot');
+  const av=document.createElement('div');
+  av.className='cavatar '+(role==='user'?'user-av':'bot-av');
+  av.textContent=role==='user'?'מ':'ג';
+  const b=document.createElement('div');
+  b.className='cbubble';
+  if(typing){b.innerHTML='<div class="typing-dots"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>';d.id='typing-msg';}
+  else b.textContent=text;
+  d.appendChild(av);d.appendChild(b);msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function sendChat(){
+  if(!apiKey){toast('הזן API Key בתיבה למעלה');return;}
+  const inp=document.getElementById('chat-inp');
+  const btn=document.getElementById('chat-send');
+  const txt=inp.value.trim();if(!txt)return;
+  document.getElementById('chat-sugs').style.display='none';
+  addChat('user',txt);chatHistory.push({role:'user',content:txt});
+  inp.value='';btn.disabled=true;addChat('bot','',true);
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-4-6',max_tokens:1000,messages:[{role:'user',content:GARDEN_CTX+'\n\n'+chatHistory.map(m=>m.role+': '+m.content).join('\n')}]})
+    });
+    const data=await res.json();
+    const reply=data.content?.find(b=>b.type==='text')?.text||'לא הצלחתי לענות.';
+    document.getElementById('typing-msg')?.remove();
+    addChat('bot',reply);chatHistory.push({role:'assistant',content:reply});
+  }catch(e){document.getElementById('typing-msg')?.remove();addChat('bot','שגיאת חיבור — בדוק את ה-API Key.');}
+  btn.disabled=false;inp.focus();
+}
+function useSug(el){document.getElementById('chat-inp').value=el.textContent;sendChat();}
+
+load();renderHeader();renderAlerts();renderPlants();clearJForm();
+fetchWeather();
+addChat('bot','שלום משה! אני סוכן הגינה שלך. מכיר את כל 17 הצמחים בנוף הגליל. שאל אותי כל שאלה!');
+</script>
+</body>
+</html>
